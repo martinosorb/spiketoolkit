@@ -21,10 +21,12 @@ def mountainsort4(
     t_start_proc = time.time()
     if by_property is None:
         sorting = _mountainsort4(recording, detect_sign, adjacency_radius, freq_min, freq_max,
-                                 whiten, clip_size, detect_threshold, detect_interval, noise_overlap_threshold)
+                                 whiten, clip_size, detect_threshold, detect_interval, noise_overlap_threshold,
+                                 output_folder)
     else:
         if by_property in recording.getChannelPropertyNames():
-            sorting = _spikeSortByProperty(recording, 'mountainsort', by_property, parallel, output_folder=output_folder,
+            sorting = _spikeSortByProperty(recording, 'mountainsort', by_property, parallel,
+                                           output_folder=output_folder,
                                            detect_sign=detect_sign, adjacency_radius=adjacency_radius,
                                            freq_min=freq_min, freq_max=freq_max, whiten=whiten, clip_size=clip_size,
                                            detect_threshold=detect_threshold, detect_interval=detect_interval,
@@ -32,7 +34,8 @@ def mountainsort4(
         else:
             print("Property not available! Running normal spike sorting")
             sorting = _mountainsort4(recording, detect_sign, adjacency_radius, freq_min, freq_max,
-                                     whiten, clip_size, detect_threshold, detect_interval, noise_overlap_threshold)
+                                     whiten, clip_size, detect_threshold, detect_interval, noise_overlap_threshold,
+                                     output_folder)
 
     print('Elapsed time: ', time.time() - t_start_proc)
 
@@ -49,7 +52,8 @@ def _mountainsort4(
         clip_size=50,
         detect_threshold=3,
         detect_interval=10,  # Minimum number of timepoints between events detected on the same channel
-        noise_overlap_threshold=0.15  # Use None for no automated curation
+        noise_overlap_threshold=0.15,  # Use None for no automated curation,
+        output_folder=None
 ):
     try:
         import ml_ms4alg
@@ -78,7 +82,8 @@ def _mountainsort4(
         adjacency_radius=adjacency_radius,
         clip_size=clip_size,
         detect_threshold=detect_threshold,
-        detect_interval=detect_interval
+        detect_interval=detect_interval,
+        tmpdir=output_folder
     )
 
     # Curate

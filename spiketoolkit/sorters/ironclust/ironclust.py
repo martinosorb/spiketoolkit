@@ -17,12 +17,13 @@ def ironclust(recording,  # Recording object
               freq_min=300,  # Lower frequency limit for band-pass filter
               freq_max=6000,  # Upper frequency limit for band-pass filter
               pc_per_chan=3,  # Number of pc per channel
-              ironclust_path=None
+              ironclust_path=None,
+              useGPU=False
 ):
     t_start_proc = time.time()
     if by_property is None:
         sorting = _ironclust(recording, prm_template_name, output_folder, detect_sign, adjacency_radius,
-                             detect_threshold, merge_thresh, freq_min, freq_max, pc_per_chan, ironclust_path)
+                             detect_threshold, merge_thresh, freq_min, freq_max, pc_per_chan, ironclust_path, useGPU)
     else:
         if by_property in recording.getChannelPropertyNames():
             sorting = _spikeSortByProperty(recording, 'ironclust', by_property, parallel,
@@ -30,7 +31,7 @@ def ironclust(recording,  # Recording object
                                            output_folder=output_folder, detect_sign=detect_sign,
                                            adjacency_radius=adjacency_radius, detect_threshold=detect_threshold,
                                            merge_thresh=merge_thresh, freq_min=freq_min, freq_max=freq_max,
-                                           pc_per_chan=pc_per_chan, ironclust_path=ironclust_path)
+                                           pc_per_chan=pc_per_chan, ironclust_path=ironclust_path, useGPU=useGPU)
         else:
             print("Property not available! Running normal spike sorting")
             sorting = _ironclust(recording, prm_template_name, output_folder, detect_sign, adjacency_radius,
@@ -50,7 +51,8 @@ def _ironclust(recording,  # Recording object
                freq_min=300,  # Lower frequency limit for band-pass filter
                freq_max=6000,  # Upper frequency limit for band-pass filter
                pc_per_chan=3,  # Number of pc per channel
-               ironclust_path=None
+               ironclust_path=None,
+               useGPU=False
                ):
     try:
         from mountainlab_pytools import mdaio
@@ -96,6 +98,11 @@ def _ironclust(recording,  # Recording object
     print('Num. channels = {}, Num. timepoints = {}, duration = {} minutes'.format(num_channels, num_timepoints,
                                                                                    duration_minutes))
 
+    if useGPU:
+        fGpu = 1
+    else:
+        fGpu = 0
+
     print('Creating .params file...')
     txt = ''
     txt += 'samplerate={}\n'.format(samplerate)
@@ -107,6 +114,7 @@ def _ironclust(recording,  # Recording object
     txt += 'freq_max={}\n'.format(freq_max)
     txt += 'pc_per_chan={}\n'.format(pc_per_chan)
     txt += 'prm_template_name={}\n'.format(prm_template_name)
+    txt += 'fGpu={}\n'.format(fGpu)
     _write_text_file(dataset_dir / 'argfile.txt', txt)
 
     print('Running IronClust...')
@@ -152,5 +160,6 @@ def ironclust_default_params():
             'freq_min': 300,  # Lower frequency limit for band-pass filter
             'freq_max': 6000,  # Upper frequency limit for band-pass filter
             'pc_per_chan': 3,  # Number of pc per channel
+            'useGPU': False,
             'parallel': True}
 

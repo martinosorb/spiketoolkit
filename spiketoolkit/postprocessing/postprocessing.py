@@ -275,7 +275,7 @@ def computePCAScores(recording, sorting, n_comp=3, by_property=None,
             # TODO check if none
             waveforms.append(wf)
     else:
-        print("Copmputing waveforms")
+        print("Computing waveforms")
         waveforms = getUnitWaveforms(recording, sorting)
 
     for i_w, wf in enumerate(waveforms):

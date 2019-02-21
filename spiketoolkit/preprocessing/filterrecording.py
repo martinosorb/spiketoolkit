@@ -59,19 +59,33 @@ class FilterRecording(se.RecordingExtractor):
         ich2 = int((end_frame - 1) / self._chunk_size)
         filtered_chunk_list = []
 
-        filt_threads = []
         for ich in range(ich1, ich2 + 1):
-            filt_threads.append(filterChunkThread(ich, self, ich1, ich2,start_frame, end_frame, channel_ids))
-        for t in filt_threads:
-            t.start()
-        for t in filt_threads:
-            t.join()
-
-        sorted_threads = np.array(filt_threads)[np.argsort([t.chunk_id for t in filt_threads])]
-        for t in sorted_threads:
-            filtered_chunk_list.append(t.filtered_chunk)
-
+            filtered_chunk0 = self._get_filtered_chunk(ich)
+            if ich == ich1:
+                start0 = start_frame - ich * self._chunk_size
+            else:
+                start0 = 0
+            if ich == ich2:
+                end0 = end_frame - ich * self._chunk_size
+            else:
+                end0 = self._chunk_size
+            chan_idx = [self.getChannelIds().index(chan) for chan in channel_ids]
+            filtered_chunk_list.append(filtered_chunk0[chan_idx, start0:end0])
         return np.concatenate(filtered_chunk_list, axis=1)
+
+        # filt_threads = []
+        # for ich in range(ich1, ich2 + 1):
+        #     filt_threads.append(filterChunkThread(ich, self, ich1, ich2,start_frame, end_frame, channel_ids))
+        # for t in filt_threads:
+        #     t.start()
+        # for t in filt_threads:
+        #     t.join()
+        #
+        # sorted_threads = np.array(filt_threads)[np.argsort([t.chunk_id for t in filt_threads])]
+        # for t in sorted_threads:
+        #     filtered_chunk_list.append(t.filtered_chunk)
+        #
+        # return np.concatenate(filtered_chunk_list, axis=1)
 
     @abstractmethod
     def filterChunk(self, *, start_frame, end_frame):
